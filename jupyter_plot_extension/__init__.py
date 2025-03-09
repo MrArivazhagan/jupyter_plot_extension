@@ -1,0 +1,1 @@
+from jupyter_plot_extension.extension import DataPlayerExtension

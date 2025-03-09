@@ -40,17 +40,40 @@ class DataPlayerChatParticipant(ChatParticipant):
         self, request: ChatRequest, response: ChatResponse, options: dict = {}
     ) -> None:
         if request.command == "load":
-            response.stream(
-                MarkdownData("""\n```text\n@data /plot <url>"\n```\n""")
-            )
-            response.stream(
-                MarkdownData(
-                    "Here is a Python method I generated. "
-                    "\n```python\ndef show_message():\n  print('Hello world!')"
-                    "\n```\n"
+            if request.prompt:
+                response.stream(
+                    MarkdownData(
+                        f"""```python
+import requests
+import pandas as pd
+
+# Define the API endpoint using an f-string (replace the placeholder as needed)
+data_api_endpoint = '{request.prompt}'  # Update with your actual API endpoint
+
+def load_data_from_api(api_url):
+    # Send a GET request to the API
+    response = requests.get(api_url)
+    # Raise an error if the request was unsuccessful
+    response.raise_for_status()
+    # Parse the JSON data from the response
+    json_data = response.json()
+    # Convert the JSON data into a pandas DataFrame using from_dict
+    df = pd.DataFrame.from_dict(json_data)
+    return df
+
+# Load data from the API endpoint into a DataFrame
+data_frame = load_data_from_api(data_api_endpoint)
+
+# Display the first few rows of the DataFrame
+data_frame.head()
+```"""
+                    )
                 )
-            )
-            response.finish()
+                response.finish()
+            else:
+                response.stream(
+                    MarkdownData("Provide api endpoint to load data")
+                )
             return
 
         await self.handle_chat_request_with_tools(request, response, options)
